@@ -5,6 +5,13 @@ import { NoteService } from './note.service';
 describe('NoteController', () => {
   let controller: NoteController;
 
+  const mockReq = {
+    user: {
+      userId: 'user-1',
+      id: 'user-1',
+    },
+  };
+
   const mockNoteService = {
     create: jest.fn().mockImplementation((dto) => ({ id: '1', ...dto })),
     findAll: jest
@@ -34,7 +41,7 @@ describe('NoteController', () => {
   });
   it('should create a note', async () => {
     const dto = { title: 'New Note', content: 'Note content' };
-    expect(await controller.create(dto)).toEqual({ id: '1', ...dto });
+    expect(await controller.create(mockReq, dto)).toEqual({ id: '1', ...dto });
     expect(mockNoteService.create).toHaveBeenCalledWith(dto);
   });
 
@@ -56,12 +63,15 @@ describe('NoteController', () => {
 
   it('should update a note', async () => {
     const dto = { title: 'Updated Note' };
-    expect(await controller.update('1', dto)).toEqual({ id: '1', ...dto });
+    expect(await controller.update(mockReq, '1', dto)).toEqual({
+      id: '1',
+      ...dto,
+    });
     expect(mockNoteService.update).toHaveBeenCalledWith('1', dto);
   });
 
   it('should delete a note', async () => {
-    expect(await controller.remove('1')).toEqual({ id: '1' });
+    expect(await controller.remove(mockReq, '1')).toEqual({ id: '1' });
     expect(mockNoteService.remove).toHaveBeenCalledWith('1');
   });
 });

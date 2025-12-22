@@ -19,7 +19,7 @@ import { UpdateNoteDto } from './dto/update-note.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@ApiTags('Notes (Public)')
+@ApiTags('Notes')
 @Controller('notes')
 export class NoteController {
   constructor(private readonly noteService: NoteService) {}
