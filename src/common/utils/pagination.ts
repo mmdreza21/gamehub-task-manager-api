@@ -14,24 +14,48 @@ export interface PaginationResult<T> {
   };
 }
 
+export interface PaginateOptions {
+  include?: any;
+  select?: any;
+  where?: any;
+  orderBy?: any;
+}
+
 export async function paginatePrisma<T>(
   model: any,
   options: PaginationOptions,
-  where: any = {},
-  orderBy: any = { createdAt: 'desc' },
+  paginateOptions?: PaginateOptions,
 ): Promise<PaginationResult<T>> {
-  const page = options.page ?? 1;
-  const limit = options.limit ?? 10;
+  const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 10;
   const skip = (page - 1) * limit;
 
+  // Build the findMany query
+  const findManyQuery: any = {
+    skip,
+    take: limit, // Ensure this is a number
+  };
+
+  // Add optional fields if provided
+  if (paginateOptions?.where) {
+    findManyQuery.where = paginateOptions.where;
+  }
+
+  if (paginateOptions?.orderBy) {
+    findManyQuery.orderBy = paginateOptions.orderBy;
+  }
+
+  if (paginateOptions?.include) {
+    findManyQuery.include = paginateOptions.include;
+  }
+
+  if (paginateOptions?.select) {
+    findManyQuery.select = paginateOptions.select;
+  }
+
   const [data, total] = await Promise.all([
-    model.findMany({
-      where,
-      skip,
-      take: +limit,
-      orderBy,
-    }),
-    model.count({ where }),
+    model.findMany(findManyQuery),
+    model.count({ where: paginateOptions?.where || {} }),
   ]);
 
   return {

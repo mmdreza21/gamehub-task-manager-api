@@ -9,7 +9,7 @@ import { Types } from 'mongoose';
 @Injectable()
 export class ObjectIdValidator implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
-    if (!Types.ObjectId.isValid(req.params.id)) {
+    if (!Types.ObjectId.isValid(req.params.id as string)) {
       throw new BadRequestException('this id is not object id dud');
     }
     next();

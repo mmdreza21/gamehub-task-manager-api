@@ -68,3 +68,48 @@ model Note {
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Game {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  slug         String    @unique
+  name         String
+  description  String?
+  released     DateTime?
+  rating       Float?
+  ratingsCount Int?
+  metacritic   Int?
+
+  genres GameGenre[]
+
+  tags            String[]
+  backgroundImage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  slug String @unique
+
+  games GameGenre[]
+}
+
+model GameGenre {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  gameId  String @db.ObjectId
+  genreId String @db.ObjectId
+
+  game  Game  @relation(fields: [gameId], references: [id])
+  genre Genre @relation(fields: [genreId], references: [id])
+
+  @@unique([gameId, genreId])
+}
+
+model Platform {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  slug String @unique
+}
