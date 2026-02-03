@@ -80,11 +80,13 @@ export class GamesService {
       ];
     }
 
-    // Filter by genres
     if (genres?.length) {
+      // Ensure genres is always an array
+      const genreArray = Array.isArray(genres) ? genres : [genres];
+
       where.genres = {
         some: {
-          genreId: { in: genres },
+          genreId: { in: genreArray },
         },
       };
     }
@@ -183,7 +185,6 @@ export class GamesService {
     return game;
   }
 
-
   async update(id: string, updateGameDto: UpdateGameDto) {
     const { genreIds, ...gameData } = updateGameDto;
 
@@ -195,7 +196,6 @@ export class GamesService {
       throw new NotFoundException(`Game with ID ${id} not found`);
     }
 
-   
     if (gameData.slug && gameData.slug !== existingGame.slug) {
       const slugExists = await this.prisma.game.findUnique({
         where: { slug: gameData.slug },
@@ -204,7 +204,6 @@ export class GamesService {
         throw new BadRequestException('Game with this slug already exists');
       }
     }
-
 
     if (genreIds) {
       const genres = await this.prisma.genre.findMany({
@@ -215,7 +214,6 @@ export class GamesService {
       }
     }
 
-    
     return this.prisma.$transaction(async (prisma) => {
       await prisma.game.update({
         where: { id },
@@ -223,12 +221,10 @@ export class GamesService {
       });
 
       if (genreIds) {
- 
         await prisma.gameGenre.deleteMany({
           where: { gameId: id },
         });
 
-    
         await prisma.gameGenre.createMany({
           data: genreIds.map((genreId) => ({
             gameId: id,
@@ -241,9 +237,7 @@ export class GamesService {
     });
   }
 
-  
   async remove(id: string) {
-
     const game = await this.prisma.game.findUnique({
       where: { id },
     });
@@ -251,20 +245,16 @@ export class GamesService {
       throw new NotFoundException(`Game with ID ${id} not found`);
     }
 
-   
     return this.prisma.$transaction(async (prisma) => {
- 
       await prisma.gameGenre.deleteMany({
         where: { gameId: id },
       });
 
-   
       return prisma.game.delete({
         where: { id },
       });
     });
   }
-
 
   async getAllGenres() {
     return this.prisma.genre.findMany({
@@ -272,24 +262,19 @@ export class GamesService {
     });
   }
 
- 
   async createMany() {
- 
     const { games, genres } = require('src/utilities/Data');
 
-   
     await this.prisma.genre.createMany({
       data: genres,
     });
 
-    
     const gamesWithoutGenres = games.map(({ genreIds, ...g }) => g);
 
     await this.prisma.game.createMany({
       data: gamesWithoutGenres,
     });
 
-  
     const dbGames = await this.prisma.game.findMany({
       select: { id: true, slug: true },
     });
@@ -312,7 +297,4 @@ export class GamesService {
       gamesCount: games.length,
     };
   }
-
-
-
 }

@@ -79,8 +79,8 @@ model Game {
   ratingsCount Int?
   metacritic   Int?
 
-  genres GameGenre[]
-
+  genres          GameGenre[]
+  platform        String[]    @default(["Windows", "Playstation"])
   tags            String[]
   backgroundImage String?
 
@@ -90,7 +90,7 @@ model Game {
 
 model Genre {
   id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
+  name String @unique
   slug String @unique
 
   games GameGenre[]
