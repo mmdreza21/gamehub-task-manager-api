@@ -24,7 +24,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   // -------------------- CREATE USER --------------------
   async create(data: Prisma.UserCreateInput): Promise<User> {
