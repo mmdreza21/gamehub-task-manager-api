@@ -1,6 +1,7 @@
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -22,7 +23,7 @@ enum Status {
 }
 
 model User {
-  id                      String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                      String    @id @default(cuid())
   role                    Role      @default(User)
   name                    String
   password                String
@@ -43,7 +44,7 @@ model User {
 }
 
 model Task {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(cuid())
   createdAt DateTime? @default(now()) @db.Date()
   updatedAt DateTime  @updatedAt
 
@@ -54,23 +55,23 @@ model Task {
   doneAt   DateTime?
 
   User   User   @relation(fields: [userId], references: [id])
-  userId String @db.ObjectId
+  userId String
 }
 
 model Note {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now()) @db.Date()
   updatedAt DateTime @updatedAt
 
   title   String
   content String
 
-  userId String @db.ObjectId
+  userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Game {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(cuid())
   slug         String    @unique
   name         String
   description  String?
@@ -89,7 +90,7 @@ model Game {
 }
 
 model Genre {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  id   String @id @default(cuid())
   name String @unique
   slug String @unique
 
@@ -97,10 +98,10 @@ model Genre {
 }
 
 model GameGenre {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(cuid())
 
-  gameId  String @db.ObjectId
-  genreId String @db.ObjectId
+  gameId  String
+  genreId String
 
   game  Game  @relation(fields: [gameId], references: [id])
   genre Genre @relation(fields: [genreId], references: [id])
@@ -109,7 +110,7 @@ model GameGenre {
 }
 
 model Platform {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  id   String @id @default(cuid())
   name String
   slug String @unique
 }
