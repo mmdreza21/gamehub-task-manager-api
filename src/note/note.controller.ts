@@ -13,16 +13,16 @@ import { NoteService } from './note.service';
 import {
   CommonSwaggerGetNoAuth,
   CommonSwaggerPostWithAuth,
-} from 'src/common/decorators/common-swagger.decorator';
+} from '../common/decorators/common-swagger.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Notes')
 @Controller('notes')
 export class NoteController {
-  constructor(private readonly noteService: NoteService) {}
+  constructor(private readonly noteService: NoteService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)

@@ -5,7 +5,6 @@ import { AgentStreamResponseDto } from './dto/agent-stream-response.dto';
 
 @Injectable()
 export class AgentService {
-  // 🔹 non-stream (simple run)
   async run(dto: StreamAgentDto): Promise<AgentStreamResponseDto> {
     const llm = new ChatGroq({
       model: 'llama-3.3-70b-versatile',
@@ -28,7 +27,6 @@ export class AgentService {
     return { data: result.text };
   }
 
-  // 🔹 stream (token by token)
   async stream(onToken: (chunk: string) => void, task: string): Promise<void> {
     const llm = new ChatGroq({
       model: 'llama-3.3-70b-versatile',

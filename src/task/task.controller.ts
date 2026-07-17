@@ -10,18 +10,45 @@ import {
   Param,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiSecurity, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { Task } from '@prisma/client';
 import { ChangeStatusDto, CreateTaskDto } from './dto/taskdto';
 
+
 @ApiTags('Task')
-@ApiSecurity('JWT-auth')
-@UseGuards(JwtAuthGuard)
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly taskService: TaskService) { }
 
+
+  @Get('all')
+  @ApiQuery({ name: 'priority', required: false, type: Number, example: 1 })
+  @ApiQuery({
+    name: 'createdAt',
+    required: false,
+    type: String,
+    example: '2025-01-01T00:00:00.000Z',
+  })
+  @ApiQuery({
+    name: 'doneAt',
+    required: false,
+    type: String,
+    example: '2025-01-10T00:00:00.000Z',
+  })
+  async getAllTasks(
+    @Query('priority') priority?: number,
+    @Query('createdAt') createdAt?: string,
+    @Query('doneAt') doneAt?: string,
+  ): Promise<Task[]> {
+    const filters = {
+      priority: priority ? +priority : undefined,
+      createdAt: createdAt ? this.formatDate(createdAt) : undefined,
+      doneAt: doneAt ? this.formatDate(doneAt) : undefined,
+    };
+
+    return this.taskService.getAllTasks(filters);
+  }
   @Get()
   @ApiQuery({ name: 'priority', required: false, type: Number, example: 1 })
   @ApiQuery({
@@ -36,6 +63,9 @@ export class TaskController {
     type: String,
     example: '2025-01-10T00:00:00.000Z',
   })
+
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   async getTasks(
     @Request() req,
     @Query('priority') priority?: number,
@@ -75,6 +105,8 @@ export class TaskController {
       required: ['title'],
     },
   })
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   async createTask(
     @Request() req,
     @Body()
@@ -85,6 +117,8 @@ export class TaskController {
 
   // Update a task's status for the logged-in user
   @Patch(':id/status')
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   async updateTaskStatus(
     @Request() req,
     @Body() body: ChangeStatusDto,

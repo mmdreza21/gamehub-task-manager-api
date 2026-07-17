@@ -13,21 +13,21 @@ import {
 import { UsersService } from './users.service';
 import { UserSignUpDTO } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Role } from './entities/user.entity';
 import {
   PaginationOptions,
   PaginationResult,
-} from 'src/common/utils/pagination';
+} from '../common/utils/pagination';
 import { UserDTO } from './dto/user.dto';
-import { Serialize } from 'src/interceptors/serialize.iterceptor';
+import { Serialize } from '../interceptors/serialize.iterceptor';
 import { ChangePasswordDTO } from './dto/change-password-dto';
 import { VerifyEmailOtpDTO } from './dto/email-verification.dto';
 import {
   CommonSwaggerGet,
   CommonSwaggerGetNoAuth,
   CommonSwaggerPost,
-} from 'src/common/decorators/common-swagger.decorator';
+} from '../common/decorators/common-swagger.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { ForgotPasswordDTO, ResetPasswordDTO } from './dto/password-reset.dto';
 
@@ -35,7 +35,7 @@ import { ForgotPasswordDTO, ResetPasswordDTO } from './dto/password-reset.dto';
 @Controller('users')
 @Serialize(UserDTO)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // -------------------- CREATE USER --------------------
   @Post()

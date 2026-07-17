@@ -1,4 +1,4 @@
-// src/mail/templates/verify-email.template.ts
+// ../mail/templates/verify-email.template.ts
 
 export const verifyEmailTemplate = (verifyUrl: string) => `
 <!DOCTYPE html>

@@ -4,15 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { PaginationOptionsDto, GameSortField } from './dto/pagination.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { paginatePrisma } from 'src/common/utils/pagination';
+import { paginatePrisma } from '../common/utils/pagination';
 
 @Injectable()
 export class GamesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // -------------------- CREATE GAME --------------------
   async create(createGameDto: CreateGameDto) {
@@ -263,7 +263,7 @@ export class GamesService {
   }
 
   async createMany() {
-    const { games, genres } = require('src/utilities/Data');
+    const { games, genres } = require('../utilities/Data');
 
     await this.prisma.genre.createMany({
       data: genres,

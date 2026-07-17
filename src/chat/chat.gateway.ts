@@ -9,8 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
-import { UserDTO } from 'src/users/dto/user.dto';
+import { UsersService } from '../users/users.service';
+import { UserDTO } from '../users/dto/user.dto';
 import { plainToInstance } from 'class-transformer';
 import { ObjectId } from 'bson';
 
@@ -26,7 +26,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-  ) {}
+  ) { }
 
   async handleConnection(client: Socket) {
     try {

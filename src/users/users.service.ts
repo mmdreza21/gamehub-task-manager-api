@@ -6,7 +6,7 @@ import {
 import { Prisma, User } from '@prisma/client';
 import { ObjectId } from 'bson';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   paginatePrisma,
   PaginationOptions,
@@ -17,7 +17,7 @@ import { compare, genSalt, hash } from 'bcryptjs';
 import { ChangePasswordDTO } from './dto/change-password-dto';
 import { ForgotPasswordDTO, ResetPasswordDTO } from './dto/password-reset.dto';
 import { randomInt, randomBytes } from 'crypto';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {

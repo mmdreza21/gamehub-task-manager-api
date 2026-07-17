@@ -16,12 +16,12 @@ import { PaginationOptionsDto } from './dto/pagination.dto';
 import {
   CommonSwaggerGetNoAuth,
   CommonSwaggerPostWithAuth,
-} from 'src/common/decorators/common-swagger.decorator';
+} from '../common/decorators/common-swagger.decorator';
 
 @ApiTags('games')
 @Controller('games')
 export class GamesController {
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(private readonly gamesService: GamesService) { }
 
   @Post()
   @CommonSwaggerPostWithAuth({

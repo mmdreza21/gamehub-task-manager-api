@@ -5,31 +5,55 @@ import { Status } from './taskEntity';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // List all tasks with optional filters
-  async getTasks(filters?: {
-    priority?: number;
-    createdAt?: Date;
-    doneAt?: Date;
-  }): Promise<Task[]> {
+  async getAllTasks(
+    filters?: {
+      priority?: number;
+      createdAt?: Date | string;
+      doneAt?: Date | string;
+    },
+  ): Promise<Task[]> {
     const where: Prisma.TaskWhereInput = {};
 
+    // Handle priority filter
     if (filters?.priority !== undefined) {
-      where.priority = +filters.priority;
+      where.priority = filters.priority;
     }
 
     if (filters?.createdAt) {
-      where.createdAt = filters.createdAt;
+      const startOfDay = new Date(filters.createdAt);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(filters.createdAt);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      where.createdAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
     if (filters?.doneAt) {
-      where.doneAt = filters.doneAt;
+      const startOfDay = new Date(filters.doneAt);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(filters.doneAt);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      where.doneAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
     return this.prisma.task.findMany({
+      include: {
+        User: true,
+      },
       where,
-      orderBy: { createdAt: 'desc' }, // Optional: Sort tasks by creation date
+      orderBy: { createdAt: 'desc' },
     });
   }
 

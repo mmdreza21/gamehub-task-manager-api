@@ -16,11 +16,11 @@ import { UpdateGenreDto } from './dto/update-genre.dto';
 import {
   CommonSwaggerGetNoAuth,
   CommonSwaggerPostWithAuth,
-} from 'src/common/decorators/common-swagger.decorator';
+} from '../common/decorators/common-swagger.decorator';
 
 @Controller('genre')
 export class GenreController {
-  constructor(private readonly genreService: GenreService) {}
+  constructor(private readonly genreService: GenreService) { }
 
   @Post()
   @CommonSwaggerPostWithAuth({
