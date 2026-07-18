@@ -1,26 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
+import { RedisService } from '../redis/redis.service';
+
+export interface ChatMessage {
+  message: string;
+  from: unknown;
+  createdAt: string;
+}
 
 @Injectable()
 export class ChatService {
-  create(createChatDto: CreateChatDto) {
-    return 'This action adds a new chat';
+  private readonly CHAT_KEY = 'chat:messages';
+
+  constructor(private readonly redisService: RedisService) { }
+
+  async addMessage(message: ChatMessage) {
+    await this.redisService.redis.rpush(
+      this.CHAT_KEY,
+      JSON.stringify(message),
+    );
   }
 
-  findAll() {
-    return `This action returns all chat`;
-  }
+  async getMessages(): Promise<ChatMessage[]> {
+    const messages = await this.redisService.redis.lrange(
+      this.CHAT_KEY,
+      0,
+      -1,
+    );
 
-  findOne(id: number) {
-    return `This action returns a #${id} chat`;
-  }
-
-  update(id: number, updateChatDto: UpdateChatDto) {
-    return `This action updates a #${id} chat`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} chat`;
+    return messages.map((m) => JSON.parse(m));
   }
 }

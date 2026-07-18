@@ -13,6 +13,7 @@ import { UsersService } from '../users/users.service';
 import { UserDTO } from '../users/dto/user.dto';
 import { plainToInstance } from 'class-transformer';
 import { ObjectId } from 'bson';
+import { ChatService } from './chat.service';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -26,6 +27,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly chatService: ChatService,
+
   ) { }
 
   async handleConnection(client: Socket) {
@@ -41,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         excludeExtraneousValues: true,
       });
 
-      // ✅ If user already connected from another tab, just add new socket
+      //  If user already connected from another tab, just add new socket
       if (!this.userSockets.has(user.id)) {
         this.userSockets.set(user.id, new Set());
         this.onlineUsers.set(user.id, safeUser);
@@ -64,7 +67,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (sockets.has(client.id)) {
         sockets.delete(client.id);
 
-        // 🧹 If no more sockets for this user, remove user from online list
+        //  If no more sockets for this user, remove user from online list
         if (sockets.size === 0) {
           this.userSockets.delete(userId);
           this.onlineUsers.delete(userId);
@@ -73,15 +76,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     }
 
-    // 👇 Broadcast updated unique user count
+    //  Broadcast updated unique user count
     this.server.emit('userCount', this.onlineUsers.size);
     console.log('👥 Online users:', this.onlineUsers.size);
   }
 
-  // 📨 Broadcast message to everyone
+  //  Broadcast message to everyone
   @SubscribeMessage('message')
-  handleMessage(
-    @MessageBody() data: { message: string; from: string },
+  async handleMessage(
+    @MessageBody() data: { message: string },
     @ConnectedSocket() client: Socket,
   ) {
     const sender = [...this.onlineUsers.values()].find((u) =>
@@ -90,9 +93,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!sender) return;
 
-    this.server.emit('message', {
+    const chatMessage = {
       message: data.message,
       from: sender,
-    });
+      createdAt: new Date().toISOString(),
+    };
+
+    await this.chatService.addMessage(chatMessage);
+
+    this.server.emit('message', chatMessage);
   }
 }

@@ -13,6 +13,7 @@ import { GenreModule } from './genre/genre.module';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -30,8 +31,9 @@ import { join } from 'path';
     AgentModule,
     GamesModule,
     GenreModule,
+    RedisModule
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
