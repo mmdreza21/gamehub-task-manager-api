@@ -1,0 +1,23 @@
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+
+import { ChatGateway } from './chat.gateway';
+import { ChatController } from './chat.controller';
+import { ChatService } from './chat.service';
+
+import { UsersModule } from '../users/users.module';
+import { RedisModule } from '../redis/redis.module';
+
+@Module({
+  imports: [
+    UsersModule,
+    RedisModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+    }),
+  ],
+  controllers: [ChatController],
+  providers: [ChatGateway, ChatService],
+  exports: [ChatService],
+})
+export class ChatModule { }
