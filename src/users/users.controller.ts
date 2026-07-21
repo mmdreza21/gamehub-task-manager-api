@@ -115,7 +115,6 @@ export class UsersController {
   @Get('select')
   @ApiOperation({ summary: 'Get users for select/dropdown (minimal data)' })
   @ApiQuery({ name: 'search', required: false, type: String, example: 'john' })
-  @UseGuards(JwtAuthGuard)
   async getUsersForSelect(@Query('search') search?: string) {
     return this.usersService.getUsersForSelect();
   }
