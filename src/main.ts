@@ -33,5 +33,4 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(Number(process.env.PORT) || 8080, "0.0.0.0");
-
 })();

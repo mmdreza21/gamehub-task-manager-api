@@ -3,131 +3,256 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Body,
   Request,
   UseGuards,
   Query,
   Param,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
-import { TaskService } from './task.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiSecurity, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { Task } from '@prisma/client';
-import { ChangeStatusDto, CreateTaskDto } from './dto/taskdto';
+import {
+  ApiOperation,
+  ApiQuery,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TaskService } from './task.service';
+import {
+  ChangeStatusDto,
+  CreateTaskDto,
+  UpdateTaskDto,
+} from './dto/create-task.dto';
 
 @ApiTags('Task')
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
-
   @Get('all')
-  @ApiQuery({ name: 'priority', required: false, type: Number, example: 1 })
+  @ApiOperation({
+    summary: 'Get all tasks with filters and pagination',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({
-    name: 'createdAt',
+    name: 'status',
     required: false,
-    type: String,
-    example: '2025-01-01T00:00:00.000Z',
+    enum: ['Todo', 'Doing', 'ToReview', 'Done', 'Canceled', 'all'],
   })
   @ApiQuery({
-    name: 'doneAt',
+    name: 'priority',
+    required: false,
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'all'],
+  })
+  @ApiQuery({
+    name: 'search',
     required: false,
     type: String,
-    example: '2025-01-10T00:00:00.000Z',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'updatedAt', 'doneAt'],
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+  })
+  @ApiQuery({
+    name: 'AssigneeId',
+    required: false,
+    enum: ['asc', 'desc'],
   })
   async getAllTasks(
-    @Query('priority') priority?: number,
-    @Query('createdAt') createdAt?: string,
-    @Query('doneAt') doneAt?: string,
-  ): Promise<Task[]> {
-    const filters = {
-      priority: priority ? +priority : undefined,
-      createdAt: createdAt ? this.formatDate(createdAt) : undefined,
-      doneAt: doneAt ? this.formatDate(doneAt) : undefined,
-    };
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number,
 
-    return this.taskService.getAllTasks(filters);
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number,
+
+    @Query('status')
+    status?: string,
+
+    @Query('priority')
+    priority?: string,
+
+    @Query('search')
+    search?: string,
+
+    @Query('assigneeId')
+    assigneeId?: string,
+
+    @Query('sortBy')
+    sortBy?: 'createdAt' | 'updatedAt' | 'doneAt',
+
+    @Query('sortOrder')
+    sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.taskService.getAllTasks({
+      page,
+      limit,
+      status,
+      priority,
+      search,
+      assigneeId,
+      sortBy: sortBy ?? 'createdAt',
+      sortOrder: sortOrder ?? 'desc',
+    });
   }
-  @Get()
-  @ApiQuery({ name: 'priority', required: false, type: Number, example: 1 })
-  @ApiQuery({
-    name: 'createdAt',
-    required: false,
-    type: String,
-    example: '2025-01-01T00:00:00.000Z',
-  })
-  @ApiQuery({
-    name: 'doneAt',
-    required: false,
-    type: String,
-    example: '2025-01-10T00:00:00.000Z',
-  })
 
+  @Get()
+  @ApiOperation({
+    summary: "Get current user's assigned tasks",
+  })
   @ApiSecurity('JWT-auth')
   @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['Todo', 'Doing', 'ToReview', 'Done', 'Canceled', 'all'],
+  })
+  @ApiQuery({
+    name: 'priority',
+    required: false,
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'all'],
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'updatedAt', 'doneAt'],
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+  })
   async getTasks(
     @Request() req,
-    @Query('priority') priority?: number,
-    @Query('createdAt') createdAt?: string,
-    @Query('doneAt') doneAt?: string,
-  ): Promise<Task[]> {
-    const filters = {
-      priority: priority ? +priority : undefined,
-      createdAt: createdAt ? this.formatDate(createdAt) : undefined,
-      doneAt: doneAt ? this.formatDate(doneAt) : undefined,
-    };
 
-    return this.taskService.getUserTasks(req.user.userId, filters);
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number,
+
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number,
+
+    @Query('status')
+    status?: string,
+
+    @Query('priority')
+    priority?: string,
+
+    @Query('search')
+    search?: string,
+
+    @Query('sortBy')
+    sortBy?: 'createdAt' | 'updatedAt' | 'doneAt',
+
+    @Query('sortOrder')
+    sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.taskService.getUserTasks(req.user.userId, {
+      page,
+      limit,
+      status,
+      priority,
+      search,
+      sortBy: sortBy ?? 'createdAt',
+      sortOrder: sortOrder ?? 'desc',
+    });
+  } @Get(':id')
+  @ApiOperation({
+    summary: 'Get task by id',
+  })
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  async getTaskById(
+    @Request() req,
+    @Param('id') id: string,
+  ): Promise<Task> {
+    return this.taskService.getTaskById(
+      id,
+      req.user.userId,
+    );
   }
 
-  private formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    // Append a default time to ensure full ISO-8601 format
-    return date.toISOString().slice(0, 10) + 'T00:00:00.000Z';
-  }
-
-  // Create a new task for the logged-in user
   @Post()
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        title: { type: 'string', example: 'My New Task' },
-        desc: { type: 'string', example: 'Task description', nullable: true },
-        priority: { type: 'number', example: 1, nullable: true },
-        status: {
-          type: 'string',
-          example: 'Todo',
-          enum: ['Todo', 'Doing', 'ToReview', 'Done', 'Canceled'],
-        },
-      },
-      required: ['title'],
-    },
+  @ApiOperation({
+    summary: 'Create a new task',
   })
   @ApiSecurity('JWT-auth')
   @UseGuards(JwtAuthGuard)
   async createTask(
     @Request() req,
-    @Body()
-    body: CreateTaskDto,
+    @Body() body: CreateTaskDto,
   ): Promise<Task> {
-    return this.taskService.createTask(body, req.user.userId);
+    return this.taskService.createTask(
+      body,
+      req.user.userId,
+    );
   }
 
-  // Update a task's status for the logged-in user
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Update task',
+  })
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  async updateTask(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() body: UpdateTaskDto,
+  ): Promise<Task> {
+    return this.taskService.updateTask(
+      id,
+      body,
+      req.user.userId,
+    );
+  }
+
   @Patch(':id/status')
+  @ApiOperation({
+    summary: 'Update task status',
+  })
   @ApiSecurity('JWT-auth')
   @UseGuards(JwtAuthGuard)
   async updateTaskStatus(
     @Request() req,
-    @Body() body: ChangeStatusDto,
     @Param('id') id: string,
+    @Body() body: ChangeStatusDto,
   ): Promise<Task> {
     return this.taskService.updateUserTaskStatus(
       req.user.userId,
       id,
       body.status,
+    );
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete task',
+  })
+  @ApiSecurity('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  async deleteTask(
+    @Request() req,
+    @Param('id') id: string,
+  ): Promise<Task> {
+    return this.taskService.deleteTask(
+      id,
+      req.user.userId,
     );
   }
 }

@@ -1,218 +1,105 @@
-import { PrismaClient, Role, Status } from "@prisma/client";
-import * as bcrypt from "bcryptjs";
+// scripts/import-seed.ts
+
+import { PrismaClient, Role, Status, Priority } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
 export async function seed() {
-    console.log("🌱 Seeding database...");
+    console.log('📦 Importing seed data from JSON...');
 
-    // Clean up existing data
-    await prisma.note.deleteMany();
-    await prisma.task.deleteMany();
-    await prisma.user.deleteMany();
+    const dataPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        'prisma',
+        'seed-data.json',
+    );
 
-    const password = await bcrypt.hash("Password123!", 10);
+    const rawData = fs.readFileSync(dataPath, 'utf8');
+    const seedData = JSON.parse(rawData);
 
-    // ==================== USERS ====================
-    const admin = await prisma.user.create({
-        data: {
-            name: "John Doe",
-            email: "admin@example.com",
-            password,
-            role: Role.AdminOfSite,
-            isEmailVerified: true,
-        },
-    });
+    try {
+        // Delete existing data
+        await prisma.task.deleteMany();
+        await prisma.user.deleteMany();
 
-    const michael = await prisma.user.create({
-        data: {
-            name: "Michael Smith",
-            email: "michael@example.com",
-            password,
-            role: Role.User,
-            isEmailVerified: true,
-        },
-    });
+        // Store created users by email
+        const users: Record<string, { id: string }> = {};
 
-    const emily = await prisma.user.create({
-        data: {
-            name: "Emily Johnson",
-            email: "emily@example.com",
-            password,
-            role: Role.User,
-            isEmailVerified: true,
-        },
-    });
+        // Create users
+        for (const userData of seedData.users) {
+            const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const date1 = new Date();
-    date1.setDate(date1.getDate() - 2);
-    const date2 = new Date();
-    date2.setDate(date2.getDate() - 5);
+            const user = await prisma.user.create({
+                data: {
+                    name: userData.name,
+                    email: userData.email,
+                    password: hashedPassword,
+                    role: userData.role as Role,
+                    isEmailVerified: userData.isEmailVerified,
+                },
+            });
 
-    // ==================== TASKS ====================
-    await prisma.task.createMany({
-        data: [
-            // Admin tasks
-            {
-                title: "Setup PostgreSQL Database",
-                desc: "Install PostgreSQL and configure Prisma ORM",
-                status: Status.Done,
-                priority: 2,
-                doneAt: date1,
-                userId: admin.id,
-            },
-            {
-                title: "Implement JWT Authentication",
-                desc: "Create login and refresh token endpoints",
-                status: Status.Doing,
-                priority: 2,
-                userId: admin.id,
-            },
-            {
-                title: "Create API Documentation",
-                desc: "Generate Swagger docs for all endpoints",
-                status: Status.Todo,
-                priority: 1,
-                userId: admin.id,
-            },
-            {
-                title: "Setup Monitoring",
-                desc: "Implement health checks with Prometheus",
-                status: Status.ToReview,
-                priority: 1,
-                userId: admin.id,
-            },
-            {
-                title: "Migrate to Microservices",
-                desc: "Split monolith into microservices",
-                status: Status.Canceled,
-                priority: 0,
-                userId: admin.id,
-            },
+            users[user.email] = {
+                id: user.id,
+            };
+        }
 
-            // Michael tasks
-            {
-                title: "Design Homepage",
-                desc: "Create responsive landing page with Tailwind",
-                status: Status.Done,
-                priority: 1,
-                doneAt: date2,
-                userId: michael.id,
-            },
-            {
-                title: "Create User Dashboard",
-                desc: "Build dashboard with Recharts statistics",
-                status: Status.Doing,
-                priority: 2,
-                userId: michael.id,
-            },
-            {
-                title: "Write Documentation",
-                desc: "Prepare README and API usage guides",
-                status: Status.Todo,
-                priority: 1,
-                userId: michael.id,
-            },
-            {
-                title: "Implement PWA Features",
-                desc: "Make app installable with service workers",
-                status: Status.ToReview,
-                priority: 2,
-                userId: michael.id,
-            },
-            {
-                title: "Create Mobile App",
-                desc: "Build React Native app with Expo",
-                status: Status.Canceled,
-                priority: 0,
-                userId: michael.id,
-            },
+        // Create tasks
+        for (const taskData of seedData.tasks) {
+            /**
+             * Supports both formats:
+             *
+             * Old:
+             * {
+             *   "user": "john@test.com"
+             * }
+             *
+             * New:
+             * {
+             *   "creator": "admin@test.com",
+             *   "assignee": "john@test.com"
+             * }
+             */
 
-            // Emily tasks
-            {
-                title: "Learn Docker Basics",
-                desc: "Understand containers, volumes, and networks",
-                status: Status.Done,
-                priority: 0,
-                doneAt: date1,
-                userId: emily.id,
-            },
-            {
-                title: "Implement Search",
-                desc: "Add full-text search with Elasticsearch",
-                status: Status.Doing,
-                priority: 2,
-                userId: emily.id,
-            },
-            {
-                title: "Add Notifications",
-                desc: "Implement push notifications for deadlines",
-                status: Status.Todo,
-                priority: 2,
-                userId: emily.id,
-            },
-            {
-                title: "Optimize Prisma Queries",
-                desc: "Reduce query count with eager loading",
-                status: Status.ToReview,
-                priority: 1,
-                userId: emily.id,
-            },
-            {
-                title: "Implement Blockchain",
-                desc: "Add blockchain for task verification",
-                status: Status.Canceled,
-                priority: 1,
-                userId: emily.id,
-            },
-        ],
-    });
+            const creator =
+                users[taskData.creator] ??
+                users[taskData.user];
 
-    // ==================== NOTES ====================
-    await prisma.note.createMany({
-        data: [
-            {
-                title: "Backend Architecture",
-                content: "Enable CORS before deployment. Use environment variables for secrets. Add request logging with Winston.",
-                userId: admin.id,
-            },
-            {
-                title: "Security Checklist",
-                content: "Implement rate limiting (100 req/min), input validation, and XSS protection with helmet.",
-                userId: admin.id,
-            },
-            {
-                title: "Frontend State",
-                content: "Use React Query for caching and Zod for validation. Zustand for global state management.",
-                userId: michael.id,
-            },
-            {
-                title: "Deployment Notes",
-                content: "Use health checks in Docker Compose. Add wait-for-it script for database readiness.",
-                userId: emily.id,
-            },
-            {
-                title: "UI Improvements",
-                content: "Add loading skeletons and error boundaries. Implement optimistic updates for better UX.",
-                userId: michael.id,
-            },
-            {
-                title: "Database Tips",
-                content: "Use indexes on foreign keys and frequently queried fields for better performance.",
-                userId: emily.id,
-            },
-        ],
-    });
+            const assignee =
+                users[taskData.assignee] ??
+                users[taskData.user];
 
-    console.log("✅ Database seeded successfully!");
-    console.log(`👥 Users: ${await prisma.user.count()}`);
-    console.log(`📋 Tasks: ${await prisma.task.count()}`);
-    console.log(`📝 Notes: ${await prisma.note.count()}`);
+            if (!creator || !assignee) {
+                console.warn(
+                    `Skipping task "${taskData.title}" because creator or assignee was not found.`,
+                );
+                continue;
+            }
+
+            await prisma.task.create({
+                data: {
+                    title: taskData.title,
+                    desc: taskData.desc,
+                    status: taskData.status as Status,
+                    priority: taskData.priority as Priority,
+                    creatorId: creator.id,
+                    assigneeId: assignee.id,
+                },
+            });
+        }
+
+
+
+        console.log('✅ Seed data imported successfully!');
+        console.log(`👥 Users: ${await prisma.user.count()}`);
+        console.log(`📋 Tasks: ${await prisma.task.count()}`);
+    } catch (error) {
+        console.error('❌ Import failed:', error);
+    } finally {
+        await prisma.$disconnect();
+    }
 }
-
-
-seed()
-    .catch(console.error)
-    .finally(async () => {
-        prisma.$disconnect()
-    });

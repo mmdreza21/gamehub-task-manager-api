@@ -1,0 +1,462 @@
+{
+  "users": [
+    {
+      "name": "Admin User",
+      "email": "admin@test.com",
+      "password": "password123",
+      "role": "AdminOfSite",
+      "isEmailVerified": true
+    },
+    {
+      "name": "John Doe",
+      "email": "john@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    },
+    {
+      "name": "Jane Smith",
+      "email": "jane@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    },
+    {
+      "name": "Bob Wilson",
+      "email": "bob@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    },
+    {
+      "name": "Alice Brown",
+      "email": "alice@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    },
+    {
+      "name": "Charlie Davis",
+      "email": "charlie@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": false
+    },
+    {
+      "name": "Diana Martinez",
+      "email": "diana@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    },
+    {
+      "name": "Ethan Taylor",
+      "email": "ethan@test.com",
+      "password": "password123",
+      "role": "User",
+      "isEmailVerified": true
+    }
+  ],
+  "tasks": [
+    {
+      "title": "Fix login authentication",
+      "desc": "Users are reporting issues with login. Need to fix the JWT token validation and session handling. Investigate the token expiration issue.",
+      "status": "Todo",
+      "priority": "CRITICAL",
+      "creator": "admin@test.com",
+      "assignee": "john@test.com"
+    },
+    {
+      "title": "Implement user profile page",
+      "desc": "Create a profile page where users can view and edit their personal information including avatar upload and bio.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Design database schema for tasks",
+      "desc": "Review and finalize the database schema for the task management system including relationships, indexes, and migrations.",
+      "status": "Done",
+      "priority": "MEDIUM",
+      "creator": "john@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Setup CI/CD pipeline",
+      "desc": "Configure GitHub Actions for automated testing, linting, and deployment to staging and production environments.",
+      "status": "ToReview",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Write API documentation",
+      "desc": "Create comprehensive API documentation using Swagger/OpenAPI for all endpoints including authentication flows.",
+      "status": "Todo",
+      "priority": "LOW",
+      "creator": "jane@test.com",
+      "assignee": "john@test.com"
+    },
+    {
+      "title": "Fix mobile responsiveness",
+      "desc": "Address layout issues on mobile devices, especially the navigation menu, forms, and dashboard charts.",
+      "status": "Doing",
+      "priority": "MEDIUM",
+      "creator": "bob@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Implement email notifications",
+      "desc": "Set up email notifications for task assignments, due dates, status changes, and daily digests.",
+      "status": "Todo",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Optimize database queries",
+      "desc": "Review and optimize slow database queries, add appropriate indexes, and implement query caching.",
+      "status": "Canceled",
+      "priority": "MEDIUM",
+      "creator": "john@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Create landing page",
+      "desc": "Design and implement a modern landing page with animations, responsive design, and call-to-action sections.",
+      "status": "ToReview",
+      "priority": "LOW",
+      "creator": "alice@test.com",
+      "assignee": "admin@test.com"
+    },
+    {
+      "title": "Implement dark mode",
+      "desc": "Add dark mode support with theme switching functionality, persist user preference, and ensure all components adapt.",
+      "status": "Doing",
+      "priority": "LOW",
+      "creator": "jane@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Add search functionality",
+      "desc": "Implement full-text search for tasks and notes with filtering by status, priority, and assignee.",
+      "status": "Todo",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Setup monitoring and logging",
+      "desc": "Configure application monitoring with error tracking, performance metrics, and centralized logging.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "diana@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement role-based access control",
+      "desc": "Create RBAC system with different permissions for Admin, Manager, and User roles throughout the application.",
+      "status": "Todo",
+      "priority": "CRITICAL",
+      "creator": "admin@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Create dashboard analytics",
+      "desc": "Build interactive dashboard with charts for task statistics, team performance, and project progress.",
+      "status": "Done",
+      "priority": "MEDIUM",
+      "creator": "john@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Implement file uploads",
+      "desc": "Add file upload functionality for task attachments with support for images, documents, and size validation.",
+      "status": "Todo",
+      "priority": "MEDIUM",
+      "creator": "bob@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Set up WebSocket notifications",
+      "desc": "Implement real-time notifications using WebSockets for task updates, comments, and mentions.",
+      "status": "ToReview",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Write unit tests",
+      "desc": "Create comprehensive unit tests for critical components, services, and utility functions with 80% coverage.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "alice@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement keyboard shortcuts",
+      "desc": "Add keyboard shortcuts for common actions like creating tasks, navigating, and changing status.",
+      "status": "Canceled",
+      "priority": "LOW",
+      "creator": "jane@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Create onboarding flow",
+      "desc": "Design and implement user onboarding flow with tutorials, tooltips, and guided setup for new users.",
+      "status": "Todo",
+      "priority": "MEDIUM",
+      "creator": "diana@test.com",
+      "assignee": "admin@test.com"
+    },
+    {
+      "title": "Optimize frontend performance",
+      "desc": "Improve frontend performance with code splitting, lazy loading, image optimization, and bundle analysis.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "john@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Implement export functionality",
+      "desc": "Add export options for tasks and reports in CSV, PDF, and Excel formats with customizable fields.",
+      "status": "Todo",
+      "priority": "LOW",
+      "creator": "bob@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Set up staging environment",
+      "desc": "Configure a staging environment that mirrors production for testing before deployment.",
+      "status": "Done",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement task comments",
+      "desc": "Add commenting system on tasks with mentions, rich text editing, and email notifications.",
+      "status": "ToReview",
+      "priority": "MEDIUM",
+      "creator": "jane@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Create user settings page",
+      "desc": "Build user settings page with options for notification preferences, theme, language, and security.",
+      "status": "Todo",
+      "priority": "LOW",
+      "creator": "alice@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Implement drag-and-drop task board",
+      "desc": "Create a Kanban-style board with drag-and-drop functionality for task status updates.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Fix CORS issues",
+      "desc": "Resolve CORS configuration issues in production environment for API requests from different domains.",
+      "status": "Todo",
+      "priority": "CRITICAL",
+      "creator": "john@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement rate limiting",
+      "desc": "Add rate limiting to API endpoints to prevent abuse and DOS attacks, with different limits for authenticated/unauthenticated users.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Create error handling middleware",
+      "desc": "Build centralized error handling middleware with proper error responses, logging, and monitoring integration.",
+      "status": "Done",
+      "priority": "MEDIUM",
+      "creator": "diana@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Implement two-factor authentication",
+      "desc": "Add 2FA support with authenticator apps and backup codes for enhanced security.",
+      "status": "Todo",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Design system components",
+      "desc": "Create a reusable component library with design tokens, typography, and consistent styling patterns.",
+      "status": "ToReview",
+      "priority": "MEDIUM",
+      "creator": "jane@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Implement activity logs",
+      "desc": "Track user activities with detailed audit logs including task updates, status changes, and user actions.",
+      "status": "Doing",
+      "priority": "LOW",
+      "creator": "bob@test.com",
+      "assignee": "john@test.com"
+    },
+    {
+      "title": "Set up backup strategy",
+      "desc": "Configure automated database backups with point-in-time recovery and regular backup testing.",
+      "status": "Todo",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement social login",
+      "desc": "Add Google and GitHub OAuth authentication options alongside traditional email/password login.",
+      "status": "Canceled",
+      "priority": "MEDIUM",
+      "creator": "alice@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Create admin panel",
+      "desc": "Build admin dashboard with user management, system settings, analytics, and moderation tools.",
+      "status": "ToReview",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Optimize images and assets",
+      "desc": "Compress and optimize all images, implement lazy loading, and convert to modern formats like WebP.",
+      "status": "Doing",
+      "priority": "LOW",
+      "creator": "john@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Implement i18n internationalization",
+      "desc": "Add multi-language support with translations for English, Spanish, and French.",
+      "status": "Todo",
+      "priority": "MEDIUM",
+      "creator": "diana@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Create API integration tests",
+      "desc": "Write integration tests for all API endpoints using test database and supertest.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Implement soft delete",
+      "desc": "Add soft delete functionality to models with restore capability and permanent deletion option.",
+      "status": "Done",
+      "priority": "MEDIUM",
+      "creator": "jane@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Set up CDN for static assets",
+      "desc": "Configure CDN to serve static assets with proper caching headers and edge location optimization.",
+      "status": "Todo",
+      "priority": "LOW",
+      "creator": "bob@test.com",
+      "assignee": "admin@test.com"
+    },
+    {
+      "title": "Implement bulk operations",
+      "desc": "Add bulk actions for tasks like updating status, deleting, and assigning multiple tasks at once.",
+      "status": "ToReview",
+      "priority": "MEDIUM",
+      "creator": "alice@test.com",
+      "assignee": "john@test.com"
+    },
+    {
+      "title": "Create user feedback system",
+      "desc": "Build a feedback system with surveys, bug reports, and feature requests from users.",
+      "status": "Todo",
+      "priority": "LOW",
+      "creator": "charlie@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Implement session management",
+      "desc": "Add session management with device tracking, session revocation, and remember-me functionality.",
+      "status": "Doing",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Optimize API response times",
+      "desc": "Analyze and optimize API response times with query optimization, caching, and database tuning.",
+      "status": "Todo",
+      "priority": "CRITICAL",
+      "creator": "john@test.com",
+      "assignee": "bob@test.com"
+    },
+    {
+      "title": "Create maintenance mode feature",
+      "desc": "Implement maintenance mode with queued requests and user notification during system updates.",
+      "status": "Done",
+      "priority": "MEDIUM",
+      "creator": "diana@test.com",
+      "assignee": "alice@test.com"
+    },
+    {
+      "title": "Implement web analytics",
+      "desc": "Add privacy-friendly analytics tracking with Plausible or similar tool for user behavior insights.",
+      "status": "ToReview",
+      "priority": "LOW",
+      "creator": "jane@test.com",
+      "assignee": "charlie@test.com"
+    },
+    {
+      "title": "Set up automated code quality checks",
+      "desc": "Configure ESLint, Prettier, and SonarQube for continuous code quality monitoring.",
+      "status": "Doing",
+      "priority": "MEDIUM",
+      "creator": "admin@test.com",
+      "assignee": "john@test.com"
+    },
+    {
+      "title": "Implement task dependencies",
+      "desc": "Add task dependency management with blocking relationships and visual dependency graphs.",
+      "status": "Todo",
+      "priority": "HIGH",
+      "creator": "bob@test.com",
+      "assignee": "diana@test.com"
+    },
+    {
+      "title": "Create mobile app API endpoints",
+      "desc": "Design and implement optimized API endpoints specifically for mobile app consumption.",
+      "status": "Canceled",
+      "priority": "MEDIUM",
+      "creator": "alice@test.com",
+      "assignee": "ethan@test.com"
+    },
+    {
+      "title": "Implement GDPR compliance",
+      "desc": "Add data privacy features including data export, deletion requests, and cookie consent.",
+      "status": "ToReview",
+      "priority": "HIGH",
+      "creator": "admin@test.com",
+      "assignee": "jane@test.com"
+    },
+    {
+      "title": "Set up performance monitoring",
+      "desc": "Configure performance monitoring with New Relic or similar for application performance insights.",
+      "status": "Todo",
+      "priority": "MEDIUM",
+      "creator": "john@test.com",
+      "assignee": "alice@test.com"
+    }
+  ]
+}

@@ -19,6 +19,37 @@ import { ForgotPasswordDTO, ResetPasswordDTO } from './dto/password-reset.dto';
 import { randomInt, randomBytes } from 'crypto';
 import { MailService } from '../mail/mail.service';
 
+// Define user select fields (exclude sensitive data)
+const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  isEmailVerified: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
+
+// Type for user response without sensitive fields
+type UserSelectType = Prisma.UserGetPayload<{ select: typeof userSelect }>;
+
+export interface UserFilters {
+  search?: string;
+  role?: string;
+  isEmailVerified?: boolean;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedUserResponse {
+  data: UserSelectType[];
+  items: number;
+  page: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -43,6 +74,56 @@ export class UsersService {
 
     await this.sendEmailVerification(user.email);
     return user;
+  }
+
+  // -------------------- GET USERS WITH FILTERS AND PAGINATION --------------------
+  async findAllWithFilters(filters?: UserFilters): Promise<PaginatedUserResponse> {
+    const where: Prisma.UserWhereInput = {};
+    const page = Number(filters?.page) || 1;
+    const limit = Number(filters?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Handle search filter (search by name or email)
+    if (filters?.search?.trim()) {
+      where.OR = [
+        { name: { contains: filters.search.trim(), mode: 'insensitive' } },
+        { email: { contains: filters.search.trim(), mode: 'insensitive' } },
+      ];
+    }
+
+    // Handle role filter
+    if (filters?.role) {
+      where.role = filters.role as any;
+    }
+
+    // Handle email verification filter
+    if (filters?.isEmailVerified !== undefined) {
+      where.isEmailVerified = filters.isEmailVerified;
+    }
+
+    // Determine sort order
+    const sortBy = filters?.sortBy || 'createdAt';
+    const sortOrder = filters?.sortOrder === 'asc' ? 'asc' : 'desc';
+    const orderBy = { [sortBy]: sortOrder };
+
+    // Get total count for pagination
+    const totalItems = await this.prisma.user.count({ where });
+
+    // Get paginated users with select (exclude sensitive fields)
+    const users = await this.prisma.user.findMany({
+      select: userSelect,
+      where,
+      orderBy,
+      skip,
+      take: limit,
+    });
+
+    return {
+      data: users,
+      items: totalItems,
+      page,
+      totalPages: Math.ceil(totalItems / limit),
+    };
   }
 
   // -------------------- EMAIL VERIFICATION --------------------
@@ -123,7 +204,7 @@ export class UsersService {
     return { message: 'Email verified successfully' };
   }
 
-  // -------------------- PAGINATION --------------------
+  // -------------------- PAGINATION (Legacy) --------------------
   async findAll(query: PaginationOptions): Promise<PaginationResult<UserDTO>> {
     return paginatePrisma(this.prisma.user, query, {});
   }
@@ -198,6 +279,20 @@ export class UsersService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  // Get users for dropdown/select (minimal data)
+  async getUsersForSelect(): Promise<{ id: string; name: string; email: string }[]> {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 
   // -------------------- HELPERS --------------------

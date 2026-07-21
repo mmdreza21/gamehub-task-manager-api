@@ -14,14 +14,6 @@ enum Role {
   User
 }
 
-enum Status {
-  Todo
-  Doing
-  ToReview
-  Done
-  Canceled
-}
-
 model User {
   id                      String    @id @default(cuid())
   role                    Role      @default(User)
@@ -38,9 +30,24 @@ model User {
   createdAt               DateTime  @default(now()) @db.Date()
   updatedAt               DateTime  @updatedAt
 
-  // Relations
-  Task Task[]
-  Note Note[]
+  createdTasks  Task[] @relation("CreatedTasks")
+  assignedTasks Task[] @relation("AssignedTasks")
+  notes         Note[]
+}
+
+enum Status {
+  Todo
+  Doing
+  ToReview
+  Done
+  Canceled
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 model Task {
@@ -51,11 +58,14 @@ model Task {
   title    String
   desc     String
   status   Status
-  priority Int       @default(0)
+  priority Priority  @default(LOW)
   doneAt   DateTime?
 
-  User   User   @relation(fields: [userId], references: [id])
-  userId String
+  creatorId String
+  creator   User   @relation("CreatedTasks", fields: [creatorId], references: [id])
+
+  assigneeId String
+  assignee   User   @relation("AssignedTasks", fields: [assigneeId], references: [id])
 }
 
 model Note {

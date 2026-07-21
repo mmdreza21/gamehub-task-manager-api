@@ -9,8 +9,10 @@ import {
   ForbiddenException,
   Query,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UsersService, UserFilters } from './users.service';
 import { UserSignUpDTO } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -28,7 +30,7 @@ import {
   CommonSwaggerGetNoAuth,
   CommonSwaggerPost,
 } from '../common/decorators/common-swagger.decorator';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiOperation } from '@nestjs/swagger';
 import { ForgotPasswordDTO, ResetPasswordDTO } from './dto/password-reset.dto';
 
 @ApiTags('users')
@@ -49,14 +51,73 @@ export class UsersController {
     return this.usersService.create({ ...createUserDto, role: Role.User });
   }
 
-  @Post('send-verification-email')
-  @CommonSwaggerPost({ summary: 'end-verification-email' })
-  async sendVerificationEmail(@Body() body: ForgotPasswordDTO) {
-    if (!body.email) {
-      throw new BadRequestException('Email is required');
+  // -------------------- GET ALL USERS WITH FILTERS AND PAGINATION --------------------
+  @Get('all')
+  @ApiOperation({ summary: 'Get all users with filters and pagination' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({ name: 'search', required: false, type: String, example: 'john' })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    type: String,
+    enum: ['AdminOfSite', 'User'],
+    example: 'User'
+  })
+  @ApiQuery({
+    name: 'isEmailVerified',
+    required: false,
+    type: Boolean,
+    example: true
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    enum: ['createdAt', 'updatedAt', 'name', 'email'],
+    example: 'createdAt'
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    type: String,
+    enum: ['asc', 'desc'],
+    example: 'desc'
+  })
+  @UseGuards(JwtAuthGuard)
+  async getAllUsers(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('role') role?: string,
+    @Query('isEmailVerified') isEmailVerified?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    const filters: UserFilters = {
+      page,
+      limit,
+      search,
+      role,
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc',
+    };
+
+    // Convert isEmailVerified string to boolean
+    if (isEmailVerified !== undefined) {
+      filters.isEmailVerified = isEmailVerified === 'true';
     }
 
-    return this.usersService.sendEmailVerification(body.email);
+    return this.usersService.findAllWithFilters(filters);
+  }
+
+  // -------------------- GET USERS FOR SELECT/DROPDOWN --------------------
+  @Get('select')
+  @ApiOperation({ summary: 'Get users for select/dropdown (minimal data)' })
+  @ApiQuery({ name: 'search', required: false, type: String, example: 'john' })
+  @UseGuards(JwtAuthGuard)
+  async getUsersForSelect(@Query('search') search?: string) {
+    return this.usersService.getUsersForSelect();
   }
 
   // -------------------- GET CURRENT USER PROFILE --------------------
@@ -78,7 +139,7 @@ export class UsersController {
     return this.usersService.update({ id: req.user.userId }, updateUserDto);
   }
 
-  // -------------------- GET ALL USERS WITH PAGINATION --------------------
+  // -------------------- GET ALL USERS WITH PAGINATION (Legacy) --------------------
   @Get()
   @CommonSwaggerGet({ summary: 'Get list of users with pagination' })
   async getUsers(
@@ -96,6 +157,16 @@ export class UsersController {
   }
 
   // -------------------- EMAIL VERIFICATION --------------------
+  @Post('send-verification-email')
+  @CommonSwaggerPost({ summary: 'Send verification email' })
+  async sendVerificationEmail(@Body() body: { email: string }) {
+    if (!body.email) {
+      throw new BadRequestException('Email is required');
+    }
+
+    return this.usersService.sendEmailVerification(body.email);
+  }
+
   @Post('verify-email')
   @CommonSwaggerPost({ summary: 'Verify email OTP' })
   async verifyEmail(@Body() dto: VerifyEmailOtpDTO) {
@@ -103,7 +174,7 @@ export class UsersController {
   }
 
   @Get('verify')
-  @CommonSwaggerGetNoAuth({ summary: 'verify the user Email' })
+  @CommonSwaggerGetNoAuth({ summary: 'Verify the user email' })
   async verify(@Query('token') token: string) {
     return this.usersService.verifyEmail(token);
   }

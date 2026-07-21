@@ -1,142 +1,253 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, Task } from '@prisma/client';
-import { Status } from './taskEntity';
+import { Prisma, Task, Priority, Status } from '@prisma/client';
+import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
+
+export interface TaskFilters {
+  status?: string;
+  priority?: string;
+  assigneeId?: string;
+  search?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'doneAt';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedTaskResponse {
+  data: Task[];
+  items: number;
+  page: number;
+  totalPages: number;
+}
 
 @Injectable()
 export class TaskService {
   constructor(private readonly prisma: PrismaService) { }
 
-  // List all tasks with optional filters
-  async getAllTasks(
-    filters?: {
-      priority?: number;
-      createdAt?: Date | string;
-      doneAt?: Date | string;
-    },
-  ): Promise<Task[]> {
+  private buildWhere(filters?: TaskFilters): Prisma.TaskWhereInput {
     const where: Prisma.TaskWhereInput = {};
 
-    // Handle priority filter
-    if (filters?.priority !== undefined) {
-      where.priority = filters.priority;
+    if (filters?.status && filters.status !== 'all') {
+      where.status = filters.status as Status;
     }
 
-    if (filters?.createdAt) {
-      const startOfDay = new Date(filters.createdAt);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(filters.createdAt);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      where.createdAt = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
+    if (filters?.priority && filters.priority !== 'all') {
+      where.priority = filters.priority as Priority;
     }
 
-    if (filters?.doneAt) {
-      const startOfDay = new Date(filters.doneAt);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(filters.doneAt);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      where.doneAt = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
+    if (filters?.assigneeId && filters.assigneeId !== 'all') {
+      where.assigneeId = filters.assigneeId;
     }
 
-    return this.prisma.task.findMany({
-      include: {
-        User: true,
-      },
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
+    const search = filters?.search?.trim();
+
+    if (search) {
+      where.OR = [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          desc: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    return where;
   }
 
-  // Create a new task
-  async createTask(data: Partial<Task>, userId: string): Promise<Task> {
-    return this.prisma.task.create({
-      data: {
-        title: data.title,
-        desc: data.desc || '',
-        status: data.status || 'Todo',
-        priority: data.priority || 0,
-        userId,
-        createdAt: new Date(),
+  private async findTask(id: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        creator: true,
+        assignee: true,
       },
     });
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return task;
+  }
+
+  async getAllTasks(filters?: TaskFilters): Promise<PaginatedTaskResponse> {
+    const where = this.buildWhere(filters);
+
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const sortBy = filters?.sortBy ?? 'createdAt';
+    const sortOrder = filters?.sortOrder ?? 'desc';
+
+    const totalItems = await this.prisma.task.count({
+      where,
+    });
+
+    const tasks = await this.prisma.task.findMany({
+      where,
+      include: {
+        creator: true,
+        assignee: true,
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data: tasks,
+      items: totalItems,
+      page,
+      totalPages: Math.ceil(totalItems / limit),
+    };
   }
 
   async getUserTasks(
     userId: string,
-    filters?: {
-      priority?: number;
-      createdAt?: Date | string;
-      doneAt?: Date | string;
-    },
-  ): Promise<Task[]> {
-    const where: Prisma.TaskWhereInput = { userId };
+    filters?: TaskFilters,
+  ): Promise<PaginatedTaskResponse> {
+    const where = this.buildWhere(filters);
 
-    // Handle priority filter
-    if (filters?.priority !== undefined) {
-      where.priority = filters.priority;
-    }
+    where.assigneeId = userId;
 
-    if (filters?.createdAt) {
-      const startOfDay = new Date(filters.createdAt);
-      startOfDay.setHours(0, 0, 0, 0);
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 10;
+    const skip = (page - 1) * limit;
 
-      const endOfDay = new Date(filters.createdAt);
-      endOfDay.setHours(23, 59, 59, 999);
+    const sortBy = filters?.sortBy ?? 'createdAt';
+    const sortOrder = filters?.sortOrder ?? 'desc';
 
-      where.createdAt = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
-    }
-
-    if (filters?.doneAt) {
-      const startOfDay = new Date(filters.doneAt);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(filters.doneAt);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      where.doneAt = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
-    }
-
-    return this.prisma.task.findMany({
+    const totalItems = await this.prisma.task.count({
       where,
-      orderBy: { createdAt: 'desc' },
+    });
+
+    const tasks = await this.prisma.task.findMany({
+      where,
+      include: {
+        creator: true,
+        assignee: true,
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data: tasks,
+      items: totalItems,
+      page,
+      totalPages: Math.ceil(totalItems / limit),
+    };
+  } async getTaskById(id: string, userId: string): Promise<Task> {
+    const task = await this.findTask(id);
+
+    if (
+      task.creatorId !== userId &&
+      task.assigneeId !== userId
+    ) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return task;
+  }
+
+  async createTask(
+    data: CreateTaskDto,
+    creatorId: string,
+  ): Promise<Task> {
+    return this.prisma.task.create({
+      data: {
+        title: data.title,
+        desc: data.desc ?? '',
+        priority: data.priority ?? Priority.LOW,
+        status: data.status ?? Status.Todo,
+        creatorId,
+        assigneeId: data.assigneeId,
+      },
     });
   }
 
-  // Change task status
+  async updateTask(
+    id: string,
+    data: UpdateTaskDto,
+    userId: string,
+  ): Promise<Task> {
+    const task = await this.findTask(id);
+
+    // Only the creator can edit task details
+    if (task.assigneeId !== userId && task.creatorId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to update this task',
+      );
+    }
+
+    const updateData: Prisma.TaskUpdateInput = {
+      ...data,
+    };
+
+    if (data.status !== undefined) {
+      updateData.doneAt =
+        data.status === Status.Done ? new Date() : null;
+    }
+
+    return this.prisma.task.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async deleteTask(
+    id: string,
+    userId: string,
+  ): Promise<Task> {
+    const task = await this.findTask(id);
+
+    // Only the creator can delete the task
+    if (task.creatorId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to delete this task',
+      );
+    }
+
+    return this.prisma.task.delete({
+      where: { id },
+    });
+  }
+
   async updateUserTaskStatus(
     userId: string,
     taskId: string,
     status: Status,
   ): Promise<Task> {
-    const task = await this.prisma.task.findUnique({
-      where: { id: taskId },
-    });
+    const task = await this.findTask(taskId);
 
-    if (!task || task.userId !== userId) {
-      throw new Error('Task not found or access denied');
+    // Only the assignee can change the status
+    if (task.assigneeId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to update this task status',
+      );
     }
 
     return this.prisma.task.update({
-      where: { id: taskId },
+      where: {
+        id: taskId,
+      },
       data: {
         status,
-        doneAt: status === 'Done' ? new Date() : null,
+        doneAt: status === Status.Done ? new Date() : null,
       },
     });
   }
